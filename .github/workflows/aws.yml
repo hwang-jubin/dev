@@ -102,4 +102,4 @@ jobs:
           script: |
             aws ecr get-login-password | docker login --username AWS --password-stdin 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com
             docker pull 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com/dev:latest
-            docker run -p 80:8080 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com/dev:latest
+            docker run -itd -p 80:8080 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com/dev:latest
