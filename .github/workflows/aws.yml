@@ -33,7 +33,6 @@ env:
   AWS_REGION: ap-northeast-2                  # set this to your preferred AWS region, e.g. us-west-1
   ECR_REPOSITORY: dev         # set this to your Amazon ECR repository name
   ECR_REGISTRY: 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com
-  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
   SSH_USERNAME: ubuntu
   HOST: ec2-52-79-249-202.ap-northeast-2.compute.amazonaws.com
   EC2_instance_publicIP: 52.79.249.202
@@ -101,5 +100,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
+            aws ecr get-login-password | docker login --username AWS --password-stdin 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com
             docker pull 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com/dev:latest
             docker run -p 80:8080 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com/dev:latest
