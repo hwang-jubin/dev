@@ -1,39 +1,4 @@
 name: Java CI with Gradle, Build and Push Docker Image
-
-on:
-  push:
-    branches: [ "aws_CI" ]
-
-env:
-  AWS_REGION: ap-northeast-2                  # set this to your preferred AWS region, e.g. us-west-1
-  ECR_REPOSITORY: dev         # set this to your Amazon ECR repository name
-  ECR_REGISTRY: 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com
-
-permissions:
-  contents: read
-
-
-
-jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
-    # Ref: https://github.com/gradle/gradle-build-action
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          distribution: temurin
-          java-version: 11
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-
-      - name: Execute Gradle build
-        run: ./gradlew build
-
-
 # This workflow will build and push a new container image to Amazon ECR,
 # and then will deploy a new task definition to Amazon ECS, when there is a push to the "main" branch.
 #
@@ -60,6 +25,46 @@ jobs:
 #    See the documentation for each action used below for the recommended IAM policies for this IAM user,
 #    and best practices on handling the access key credentials.
 
+on:
+  push:
+    branches: [ "aws_CI" ]
+
+env:
+  AWS_REGION: ap-northeast-2                  # set this to your preferred AWS region, e.g. us-west-1
+  ECR_REPOSITORY: dev         # set this to your Amazon ECR repository name
+  ECR_REGISTRY: 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+  SSH_USERNAME: ubuntu
+  HOST: ec2-52-79-249-202.ap-northeast-2.compute.amazonaws.com
+  EC2 instance publicIP: 52.79.249.202
+
+
+permissions:
+  contents: read
+
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    # Ref: https://github.com/gradle/gradle-build-action
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 11
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Execute Gradle build
+        run: ./gradlew build
+
+
+
 
 
 
@@ -78,13 +83,23 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ github.sha }}
+          IMAGE_TAG: latest
         run: |
           # Build a docker container and
           # push it to ECR so that it can
           # be deployed to ECS.
-          
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f Dockerfile .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
+
+      - name: SSH into EC2 Instance
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.EC2 instance publicIP }}
+          username: ${{ env.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            docker pull 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com/dev:latest
+            docker run -p 80:8080 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com/dev:latest
