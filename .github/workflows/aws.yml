@@ -36,7 +36,7 @@ env:
   SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
   SSH_USERNAME: ubuntu
   HOST: ec2-52-79-249-202.ap-northeast-2.compute.amazonaws.com
-  EC2 instance publicIP: 52.79.249.202
+  EC2_instance_publicIP: 52.79.249.202
 
 
 permissions:
@@ -96,7 +96,7 @@ jobs:
       - name: SSH into EC2 Instance
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ env.EC2 instance publicIP }}
+          host: ${{ env.EC2_instance_publicIP }}
           username: ${{ env.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
