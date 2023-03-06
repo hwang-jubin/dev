@@ -36,6 +36,7 @@ env:
   SSH_USERNAME: ubuntu
   HOST: ec2-52-79-249-202.ap-northeast-2.compute.amazonaws.com
   EC2_instance_publicIP: 52.79.249.202
+  IMAGE_TAG: v1
 
 
 permissions:
@@ -83,15 +84,23 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
 #        버전
-          IMAGE_TAG: v1
         run: |
           # Build a docker container and
           # push it to ECR so that it can
           # be deployed to ECS.
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:v1 -f Dockerfile .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:v1
-          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:v1" >> $GITHUB_OUTPUT
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f Dockerfile .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
+      - name: docker image version up
+        id: docker-image
+        env:
+          NEW_VERSION_IMAGE_TAG: $((${IMAGE_TAG#v} + 1))
+        run:
+          docker tag my_image:${{ env.IMAGE_TAG }} my_image:v${NEW_VERSION_IMAGE_TAG}
+
+
+        
 
       - name: SSH into EC2 Instance
         uses: appleboy/ssh-action@master
