@@ -97,7 +97,7 @@ jobs:
         env:
           NEW_VERSION_IMAGE_TAG: $((${IMAGE_TAG#v} + 1))
         run:
-          docker tag my_image:${{ env.IMAGE_TAG }} my_image:v${NEW_VERSION_IMAGE_TAG}
+          docker tag ${{env.ECR_REGISTRY}}/${{$ECR_REPOSITORY}}:${{ env.IMAGE_TAG }} ${{env.ECR_REGISTRY}}/${{$ECR_REPOSITORY}}:v${NEW_VERSION_IMAGE_TAG}
 
 
         
