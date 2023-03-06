@@ -1,4 +1,4 @@
-name: Java CI with Gradle, Build and Push Docker Image
+name: Java CI with Gradle, Build and Push Docker Image to ECS and deploy in EC2
 # This workflow will build and push a new container image to Amazon ECR,
 # and then will deploy a new task definition to Amazon ECS, when there is a push to the "main" branch.
 #
@@ -100,6 +100,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            aws ecr get-login-password | docker login --username AWS --password-stdin 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com
-            docker pull 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com/dev:latest
-            docker rm -f dev || true && docker run -itd --name dev -p 80:8080 298027479657.dkr.ecr.ap-northeast-2.amazonaws.com/dev:latest
+            aws ecr get-login-password | docker login --username AWS --password-stdin 2${{env.ECR_REGISTRY}}
+            docker pull ${{env.ECR_REGISTRY}}/dev:latest
+            docker rm -f dev || true && docker run -itd --name dev -p 80:8080 ${{env.ECR_REGISTRY}}/dev:latest
